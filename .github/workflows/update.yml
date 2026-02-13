@@ -1,0 +1,38 @@
+name: Update Steam Wishlist Calendar
+
+on:
+  schedule:
+    - cron: '0 12 * * *'   # Runs daily at 12:00 UTC
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run script
+        run: |
+          python swc.py -i=76561198011726124
+          
+      - name: Move ICS to root
+        run: |
+          cp output/wishlist.ics wishlist.ics
+
+      - name: Commit updated calendar
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add wishlist.ics
+          git commit -m "Auto update calendar" || echo "No changes"
+          git push
